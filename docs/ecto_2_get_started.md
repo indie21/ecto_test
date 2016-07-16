@@ -21,7 +21,7 @@
 ### 创建项目
 
 ```
-➜  /tmp> mix new ecto_test
+➜  /tmp> mix new ecto_test --sup
 * creating README.md
 * creating .gitignore
 * creating mix.exs
@@ -106,7 +106,7 @@ config :ecto_test, EctoTest.Repo,
   password: "root",
   hostname: "192.168.212.129"
 
-# URL 配置方式
+# URL 配置方式，必须要配置.
 config :ecto_test, ecto_repos: [EctoTest.Repo]
   url: "mysql://root:root@192.168.212.129/ecto_test"
 ```
@@ -194,6 +194,27 @@ defmodule EctoTest.Repo.Migrations.AddDomainTable do
       add :url, :string
       timestamps
     end
+  end
+end
+```
+
+### 设置应用启动
+
+需要在ecto_test.ex设置启动 EctoTest.Repo 才可以使用
+
+```elixir
+defmodule EctoTest do
+  use Application
+
+  def start(_type, _args) do
+    import Supervisor.Spec, warn: false
+
+    children = [
+      supervisor(EctoTest.Repo, [])
+    ]
+
+    opts = [strategy: :one_for_one, name: EctoTest.Supervisor]
+    Supervisor.start_link(children, opts)
   end
 end
 ```
